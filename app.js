@@ -8,6 +8,8 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 
+var session = require('express-session');
+
 var app = express();
 
 // view engine setup
@@ -19,11 +21,34 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser("sessiontest"));
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+//配置session用于保存登录信息，需要定义在router之前，否则session会不生效
+app.set('trust proxy', 1)
+app.use(session({
+  secret: 'sessiontest',
+  cookie: {maxAge: 60*60*1000},
+  resave: true,
+  saveUninitialized: false
+}))
+app.use(function(req, res, next){
+  if(req.session.user){
+    res.locals.user = {
+      uid: req.session.user.uid,
+      username: req.session.user.username
+    }
+  }
+  else{
+    res.locals.user = {};
+  }
+  next();
+})
 
 app.use('/', index);
 app.use('/users', users);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
