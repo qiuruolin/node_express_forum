@@ -45,7 +45,6 @@ router.post('/login', function (req, res, next) {
   user_m.login(username, password_hash, function (result) {
     if(result.length){
       // res.send('登录成功');
-      console.log(req.session)
       req.session.user = {
         uid: result[0].id,
         username: username

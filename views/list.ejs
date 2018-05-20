@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/stylesheets/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <p><a href="/">返回到首页</a></p>
+        <h1>详情</h1>
+        <p>标题： <%= data[0].title %></p>
+        <div><%= data[0].content %></div>
+        <div class="reply">
+            <h2>评论</h2>
+            <div class="reply_con">
+                <table>
+                <% for(var i=0, len=data[1].length; i<len; i++) {%>
+                    <tr>
+                    <td><%=(i+1) %></td>
+                    <td><%=data[1][i].content %></td>
+                    <td><%=data[1][i].createtime %></td>
+                    </tr>
+                <% } %>
+                </table>
+            </div>
+        </div>
+        <div class="answer">
+            <% if(user.username){ %>
+            <textarea class="ans_con" cols="100" rows="10"></textarea>
+            <p><input type="button" class="submit" data-pid="<%=data[0].id %>" value="提交"><span class="tip"></span></p>
+            <% }else{%>
+            <p>请登录后回复。<a href="/users/login">去登录</a></p>
+            <% } %>
+        </div>
+    </body>
+    <script type="text/javascript" src="http://mat1.gtimg.com/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        var running = false;
+        $('.submit').on('click', function(){
+            if(running) return;
+            running = true;
+            $('.tip').text('');
+            var ans_con = $('.ans_con').val();
+            if(!ans_con){
+                $('.tip').text('*输入不能为空');
+                return;
+            }
+            $('.tip').text('数据正在提交中...');
+            var pid = $(this).data('pid');
+            $.ajax({
+                url : '/list/addreply',
+                data : {pid: pid, content: ans_con},
+                dataType : 'json',
+                type : 'get'
+            }).done(function(result){
+                if(result.code == 0){
+                    var html = '<tr><td>'+result.data.rid+'</td><td>'+ans_con+'</td><td>'+result.data.createtime+'</td></tr>';
+                    $('.reply_con table').append(html);
+                    $('.tip').text('');
+                    $('.ans_con').val('');
+                }else{
+                    $('.tip').text('回复失败');
+                }
+                running = false;
+            })
+        })
+    </script>
+</html>
